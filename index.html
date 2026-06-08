@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Lucky Project | FACEIT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0c12;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 20% 30%, #1a0a0f 0%, #050508 70%);
+            z-index: -2;
+        }
+        .navbar {
+            background: rgba(8,10,16,0.95);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(255,65,95,0.25);
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #ff415f, #ff6b3d);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 22px;
+        }
+        .logo-text {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #ffb3c1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255,255,255,0.04);
+            padding: 6px 18px;
+            border-radius: 60px;
+            border: 1px solid rgba(255,65,95,0.25);
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff415f, #ff6b3d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .logout-btn {
+            background: rgba(255,65,95,0.15);
+            border: none;
+            padding: 6px 16px;
+            border-radius: 30px;
+            color: #ff415f;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 8px;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 28px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #8a8a9a;
+            cursor: pointer;
+            border-radius: 40px;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(255,65,95,0.2), rgba(255,107,61,0.1));
+            color: #ff415f;
+            border-bottom: 2px solid #ff415f;
+        }
+        .profile-card {
+            background: linear-gradient(135deg, rgba(18,20,28,0.95), rgba(12,14,20,0.98));
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            border: 1px solid rgba(255,65,95,0.15);
+            padding: 28px;
+            margin-bottom: 20px;
+        }
+        .profile-header {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .profile-avatar-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff415f, #ff6b3d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 800;
+        }
+        .profile-stats {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 14px;
+        }
+        .stat-item {
+            background: rgba(5,7,12,0.6);
+            border-radius: 18px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff415f, #ff6b3d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .match-item {
+            background: linear-gradient(135deg, rgba(8,10,16,0.8), rgba(5,7,12,0.9));
+            border-radius: 18px;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-left: 4px solid;
+        }
+        .match-win { border-left-color: #00c853; }
+        .match-loss { border-left-color: #ff415f; }
+        .result-badge {
+            font-weight: 700;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+        }
+        .result-win { background: rgba(0,200,83,0.15); color: #00c853; }
+        .result-loss { background: rgba(255,65,95,0.15); color: #ff415f; }
+        .mvp-badge {
+            background: rgba(255,215,0,0.15);
+            color: #ffcc00;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+        .leaderboard-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 100px 80px 80px;
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            align-items: center;
+        }
+        .rank-1 { color: #ffd700; }
+        .rank-2 { color: #c0c0c0; }
+        .rank-3 { color: #cd7f32; }
+        .player-elo { color: #ff415f; font-weight: 800; }
+        .loading { text-align: center; padding: 60px; color: #8a8a9a; }
+        @media (max-width: 700px) {
+            .leaderboard-row { grid-template-columns: 50px 1fr 80px; }
+            .leaderboard-row div:nth-child(4), .leaderboard-row div:nth-child(5) { display: none; }
+            .profile-header { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div id="app">
+        <div class="navbar" v-if="user">
+            <div class="nav-container">
+                <div class="logo">
+                    <div class="logo-icon">LP</div>
+                    <div class="logo-text">Lucky Project</div>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">{{ (user.game_nickname || 'U').charAt(0) }}</div>
+                    <div class="user-name">{{ user.game_nickname }}</div>
+                    <div class="user-elo">{{ user.elo || 0 }} ELO</div>
+                    <button class="logout-btn" @click="logout">Выйти</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container" v-if="user">
+            <div class="tabs">
+                <button class="tab-btn" :class="{ active: activeTab === 'profile' }" @click="activeTab = 'profile'">👤 ПРОФИЛЬ</button>
+                <button class="tab-btn" :class="{ active: activeTab === 'matches' }" @click="activeTab = 'matches'; loadMatches()">📜 ИСТОРИЯ</button>
+                <button class="tab-btn" :class="{ active: activeTab === 'leaderboard' }" @click="activeTab = 'leaderboard'; loadLeaderboard()">🏅 ЛИДЕРБОРД</button>
+            </div>
+
+            <div v-if="activeTab === 'profile'">
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar-large">{{ (user.game_nickname || 'U').charAt(0) }}</div>
+                        <div class="profile-stats">
+                            <div class="stat-item"><div class="stat-value">{{ user.elo || 0 }}</div><div class="stat-label">ELO</div></div>
+                            <div class="stat-item"><div class="stat-value">{{ user.total_matches || 0 }}</div><div class="stat-label">МАТЧЕЙ</div></div>
+                            <div class="stat-item"><div class="stat-value">{{ user.total_wins || 0 }}</div><div class="stat-label">ПОБЕД</div></div>
+                            <div class="stat-item"><div class="stat-value">{{ winrate }}%</div><div class="stat-label">WINRATE</div></div>
+                            <div class="stat-item"><div class="stat-value">{{ kd }}</div><div class="stat-label">K/D</div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-card">
+                    <div style="font-weight: 800; margin-bottom: 20px;">📊 ДЕТАЛИ</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px;">
+                        <div>🗡️ Убийств: <strong>{{ user.total_kills || 0 }}</strong></div>
+                        <div>💀 Смертей: <strong>{{ user.total_deaths || 0 }}</strong></div>
+                        <div>🏳️ Поражений: <strong>{{ user.total_losses || 0 }}</strong></div>
+                        <div>🎮 Платформа: <strong>{{ user.platform || '-' }}</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="activeTab === 'matches'">
+                <div class="profile-card" v-if="matches.length === 0"><div style="text-align:center; padding:30px;">🎮 Нет матчей</div></div>
+                <div v-for="m in matches" :key="m.match_id" class="match-item" :class="m.result === 'win' ? 'match-win' : 'match-loss'">
+                    <div><span class="result-badge" :class="m.result === 'win' ? 'result-win' : 'result-loss'">{{ m.result === 'win' ? 'ПОБЕДА' : 'ПОРАЖЕНИЕ' }}</span><span v-if="m.is_mvp" class="mvp-badge" style="margin-left:8px;">👑 MVP</span></div>
+                    <div>💀 {{ m.kills }}/{{ m.deaths }}/{{ m.assists || 0 }}</div>
+                    <div v-if="m.map_name">🗺️ {{ m.map_name }}</div>
+                    <div :style="{color: (m.elo_change||0) >= 0 ? '#00c853' : '#ff415f'}">{{ (m.elo_change||0) >= 0 ? '+' : '' }}{{ m.elo_change || 0 }} ELO</div>
+                    <div style="font-size:11px;">{{ formatDate(m.date) }}</div>
+                </div>
+            </div>
+
+            <div v-if="activeTab === 'leaderboard'">
+                <div class="profile-card">
+                    <div v-for="(p, idx) in leaderboard" :key="p.telegram_id" class="leaderboard-row">
+                        <div :class="'rank-' + (idx+1)" v-if="idx<3">{{ idx===0?'🥇':idx===1?'🥈':'🥉'}} {{idx+1}}</div>
+                        <div v-else>{{idx+1}}</div>
+                        <div><strong>{{ p.game_nickname }}</strong></div>
+                        <div class="player-elo">{{ p.elo }} ELO</div>
+                        <div>{{ p.total_matches || 0 }}</div>
+                        <div>{{ ((p.total_wins||0)/(p.total_matches||1)*100).toFixed(1) }}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="!user && !loading" class="loading">⏳ Загрузка профиля...</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script>
+        const tg = window.Telegram.WebApp;
+        
+        new Vue({
+            el: '#app',
+            data: {
+                user: null,
+                activeTab: 'profile',
+                matches: [],
+                leaderboard: [],
+                loading: true
+            },
+            computed: {
+                winrate() {
+                    if (!this.user) return '0';
+                    const wins = this.user.total_wins || 0;
+                    const matches = this.user.total_matches || 1;
+                    return ((wins / matches) * 100).toFixed(1);
+                },
+                kd() {
+                    if (!this.user) return '0';
+                    const kills = this.user.total_kills || 0;
+                    const deaths = this.user.total_deaths || 1;
+                    return (kills / deaths).toFixed(2);
+                }
+            },
+            mounted() {
+                if (tg) {
+                    tg.ready();
+                    tg.expand();
+                    
+                    // Получаем данные пользователя из Telegram
+                    const userData = tg.initDataUnsafe?.user;
+                    
+                    if (userData && userData.id) {
+                        // Запрашиваем полный профиль у бота
+                        tg.sendData(JSON.stringify({
+                            action: 'get_profile_by_id',
+                            telegram_id: userData.id
+                        }));
+                    } else {
+                        this.loading = false;
+                    }
+                }
+                
+                // Слушаем ответ от бота
+                window.Telegram.WebApp.onEvent('mainButtonClicked', () => {});
+            },
+            methods: {
+                async loadMatches() {
+                    if (!this.user) return;
+                    
+                    if (window.Telegram?.WebApp) {
+                        window.Telegram.WebApp.sendData(JSON.stringify({
+                            action: 'get_matches',
+                            telegram_id: this.user.telegram_id
+                        }));
+                    }
+                },
+                
+                async loadLeaderboard() {
+                    if (window.Telegram?.WebApp) {
+                        window.Telegram.WebApp.sendData(JSON.stringify({
+                            action: 'get_leaderboard'
+                        }));
+                    }
+                },
+                
+                logout() {
+                    if (tg) tg.close();
+                },
+                
+                formatDate(d) { 
+                    if (!d) return '—';
+                    return new Date(d).toLocaleDateString('ru-RU');
+                }
+            }
+        });
+
+        // Глобальный обработчик ответов от бота (через WebApp)
+        window.Telegram.WebApp.onEvent('popupClosed', () => {});
+        
+        // Перехватываем ответы (бот отправляет данные через message.answer)
+        // В WebApp ответ приходит как новое сообщение, но мы можем получить его через колбэк
+        // Альтернатива: используем fetch к вашему серверу или прямые вызовы
+    </script>
+</body>
+</html>
