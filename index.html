@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Lucky Project | FACEIT</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -289,6 +289,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script>
+        // Глобальная переменная для хранения данных от бота
+        window.pendingRequests = {};
+        
         const tg = window.Telegram.WebApp;
         
         new Vue({
@@ -323,35 +326,83 @@
                     const userData = tg.initDataUnsafe?.user;
                     
                     if (userData && userData.id) {
-                        // Запрашиваем полный профиль у бота
-                        tg.sendData(JSON.stringify({
-                            action: 'get_profile_by_id',
-                            telegram_id: userData.id
-                        }));
+                        console.log('Пользователь из Telegram:', userData);
+                        // Сохраняем базовую инфу
+                        this.user = {
+                            telegram_id: userData.id,
+                            game_nickname: userData.first_name || userData.username || 'Игрок'
+                        };
+                        // Запрашиваем полный профиль
+                        this.requestProfile(userData.id);
                     } else {
                         this.loading = false;
+                        console.log('Нет данных пользователя из Telegram');
                     }
+                } else {
+                    this.loading = false;
+                    console.log('Telegram WebApp не доступен');
                 }
                 
-                // Слушаем ответ от бота
-                window.Telegram.WebApp.onEvent('mainButtonClicked', () => {});
+                // Слушаем ответы от бота через onEvent
+                if (tg) {
+                    tg.onEvent('mainButtonClicked', () => {});
+                }
             },
             methods: {
+                requestProfile(telegramId) {
+                    const requestId = Date.now();
+                    window.pendingRequests[requestId] = {
+                        type: 'profile',
+                        callback: (data) => {
+                            if (data.user) {
+                                this.user = { ...this.user, ...data.user };
+                            }
+                            this.loading = false;
+                        }
+                    };
+                    
+                    if (tg) {
+                        tg.sendData(JSON.stringify({
+                            action: 'get_profile_by_id',
+                            telegram_id: telegramId,
+                            request_id: requestId
+                        }));
+                    }
+                },
+                
                 async loadMatches() {
                     if (!this.user) return;
                     
-                    if (window.Telegram?.WebApp) {
-                        window.Telegram.WebApp.sendData(JSON.stringify({
+                    const requestId = Date.now();
+                    window.pendingRequests[requestId] = {
+                        type: 'matches',
+                        callback: (data) => {
+                            this.matches = data.matches || [];
+                        }
+                    };
+                    
+                    if (tg) {
+                        tg.sendData(JSON.stringify({
                             action: 'get_matches',
-                            telegram_id: this.user.telegram_id
+                            telegram_id: this.user.telegram_id,
+                            request_id: requestId
                         }));
                     }
                 },
                 
                 async loadLeaderboard() {
-                    if (window.Telegram?.WebApp) {
-                        window.Telegram.WebApp.sendData(JSON.stringify({
-                            action: 'get_leaderboard'
+                    const requestId = Date.now();
+                    window.pendingRequests[requestId] = {
+                        type: 'leaderboard',
+                        callback: (data) => {
+                            this.leaderboard = data.leaderboard || [];
+                        }
+                    };
+                    
+                    if (tg) {
+                        tg.sendData(JSON.stringify({
+                            action: 'get_leaderboard',
+                            request_id: requestId
                         }));
                     }
                 },
@@ -367,12 +418,11 @@
             }
         });
 
-        // Глобальный обработчик ответов от бота (через WebApp)
-        window.Telegram.WebApp.onEvent('popupClosed', () => {});
+        // ВАЖНО! Перехватываем ответы от бота через console.log
+        // Но в WebApp нет прямого способа получить message.answer()
+        // Поэтому бот должен отправлять данные через другой механизм
         
-        // Перехватываем ответы (бот отправляет данные через message.answer)
-        // В WebApp ответ приходит как новое сообщение, но мы можем получить его через колбэк
-        // Альтернатива: используем fetch к вашему серверу или прямые вызовы
+        console.log('WebApp готов, ждем данные от бота');
     </script>
 </body>
 </html>
